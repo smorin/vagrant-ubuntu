@@ -1,0 +1,115 @@
+#!/bin/sh -e
+
+. ./vars.sh
+
+# Check if the CentOS ISO is found, if not tries to download it 
+if [ ! -f "${INSTALLER_PATH}${INSTALLER_ISO}" ] ; then
+    if [ ! -d "${INSTALLER_PATH}" ] ; then
+        mkdir -p ${INSTALLER_PATH}
+    fi
+    curl -Lk ${CENTOS_6_5_MINIMAL_URL} -o "${INSTALLER_PATH}${INSTALLER_ISO}"
+fi
+
+# Check if the VirtualBox Additions ISO is found
+
+if [ ! -f "${GUESTADDITIONS}" ] ; then
+    if [ -f "${GUESTADDITIONS_MAC}" ] ; then
+        GUESTADDITIONS=${GUESTADDITIONS_MAC}
+        echo "GUESTADDITIONS=${GUESTADDITIONS_MAC}"
+    else
+        echo "Can't find GuestAdditions ISO, find manually and update vars.sh with the right path"
+    fi
+
+fi
+
+
+
+VBoxManage createvm --name ${NAME} --ostype ${TYPE} --register
+
+VBoxManage modifyvm ${NAME} \
+    --vram 12 \
+    --accelerate3d off \
+    --memory 613 \
+    --usb off \
+    --audio none \
+    --boot1 disk --boot2 dvd --boot3 none --boot4 none \
+    --nictype1 virtio --nic1 nat --natnet1 "${NATNET}" \
+    --nictype2 virtio \
+    --nictype3 virtio \
+    --nictype4 virtio \
+    --acpi on --ioapic off \
+    --chipset piix3 \
+    --rtcuseutc on \
+    --hpet on \
+    --bioslogofadein off \
+    --bioslogofadeout off \
+    --bioslogodisplaytime 0 \
+    --biosbootmenu disabled
+
+VBoxManage createhd --filename "${HDD}" --size 8192
+# Swap is recommended to be double the size of RAM.
+VBoxManage createhd --filename "${HDD_SWAP}" --size 1226
+
+VBoxManage storagectl ${NAME} \
+    --name SATA --add sata --portcount 2 --bootable on
+
+VBoxManage storageattach ${NAME} \
+    --storagectl SATA --port 0 --type hdd --medium "${HDD}"
+VBoxManage storageattach ${NAME} \
+    --storagectl SATA --port 1 --type hdd --medium "${HDD_SWAP}"
+VBoxManage storageattach ${NAME} \
+    --storagectl SATA --port 2 --type dvddrive --medium "${INSTALLER_PATH}${INSTALLER_ISO}"
+# Specifies Guest Additions Manually
+VBoxManage storageattach ${NAME} \
+    --storagectl SATA --port 3 --type dvddrive --medium "${GUESTADDITIONS}"
+# Specifies Guest Additions Automatically
+# Supposed to work but doesn't
+# See: http://www.virtualbox.org/manual/ch08.html#vboxmanage-storageattach
+# See: https://www.virtualbox.org/ticket/11165
+# VBoxManage storageattach ${NAME} \
+#    --storagectl SATA --port 3 --medium additions
+VBoxManage startvm ${NAME} --type gui
+
+# This only really caters for the common case. If you have problems, please
+# discover your host's IP address and adjust accordingly.
+IP=`echo ${NATNET} | sed -nE 's/^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}).*/\1/p'`
+IP=${IP}".3"
+
+
+# Tring to ping the IP if not reachable set error
+PING_RESPONSE=0
+ping -q -c 1 -W 2 ${IP} || PING_RESPONSE=1
+
+
+# If response is 0 the IP is reachable so might be the right one
+if [ ! $PING_RESPONSE -eq 0 ] ; then
+    # If on a mac look up your IP address
+    echo "IP from NATNET variable not pingable"
+    if [ `uname` == "Darwin" ] ; then
+        echo "On a mac autoassigning"
+        IP=`ipconfig getifaddr en1`
+    fi
+fi
+
+# Retesting might have auto assigned
+PING_RESPONSE=0
+ping -q -c 1 -W 2 ${IP} || PING_RESPONSE=1
+
+# If response is 0 the IP is reachable so might be the right one
+if [ ! $PING_RESPONSE -eq 0 ] ; then
+    echo "Couldn't ping the IP so you should look it up manually"
+fi 
+
+# If this directory doesn't exist the box won't be created
+if [ ! -d ./boxes ] ; then
+    mkdir boxes
+fi
+
+echo 'At the boot prompt, hit <TAB> and then type:'
+echo " ks=http://${IP}:8081"
+echo "When done typing will look like:"
+echo "> vmlinuz initrd=initrd.img ks=http://${IP}:8081"
+sh ./httpd.sh | nc -l 8081 >/dev/null
+
+echo When finished:
+echo "./cleanup && vagrant package --base ${NAME} --output boxes/${NAME}-`date +%Y%m%d`.box"
