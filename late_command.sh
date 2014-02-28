@@ -31,20 +31,6 @@ chown -R vagrant:vagrant /home/vagrant/.ssh
 #### Setup network devices.
 rm /etc/udev/rules.d/70-persistent-net.rules
 echo '#' >/etc/udev/rules.d/75-persistent-net-generator.rules
-cat <<EOM >/etc/sysconfig/network
-HOSTNAME=vagrant-centos64.vagrantup.com
-NETWORKING=yes
-EOM
-
-cat <<EOM >/etc/sysconfig/network-scripts/ifcfg-eth0
-BOOTPROTO=dhcp
-DEVICE=eth0
-DHCP_HOSTNAME=vagrant-ubuntu1204.com
-IPV6INIT=yes
-NM_CONTROLLED=no
-ONBOOT=yes
-TYPE=Ethernet
-EOM
 
 #### setup DNS records
 cat <<EOM >>/etc/hosts
@@ -67,10 +53,6 @@ rm -f get-pip.py
 pip install ansible
 
 #### VirtualBox Guest Additions
-# The "Window System drivers" step will fail which is fine because we
-# don't have Xorg
-sudo apt-get linux-headers-$(uname -r)
-#mount -o ro \`find /dev/disk/by-label | grep VBOXADDITIONS\` /mnt/ -------not working
 mount /dev/cdrom /mnt
 /mnt/VBoxLinuxAdditions.run
 chkconfig vboxadd-x11 off

@@ -23,12 +23,20 @@ if [ ! -f "${GUESTADDITIONS}" ] ; then
 
 fi
 
-# make sure download is right...
-UBUNTU_ISO_CHKSUM=`md5sum "${INSTALLER_PATH}${INSTALLER_ISO}" | cut -d" " -f 1`
-echo $UBUNTU_ISO_CHKSUM
-if [ "${UBUNTU_ISO_MD5HASH}" != "${UBUNTU_ISO_CHKSUM}" ]; then
-    echo "ERROR: MD5 does not match. Got ${UBUNTU_ISO_CHKSUM} instead of ${UBUNTU_ISO_MD5HASH}. Aborting."
-    exit 1
+# make sure download is right
+if [ "$OS_NAME" == "Linux" ]; then
+    UBUNTU_ISO_CHKSUM=`md5sum "${INSTALLER_PATH}${INSTALLER_ISO}" | cut -d" " -f 1`
+    echo $UBUNTU_ISO_CHKSUM
+    if [ "${UBUNTU_ISO_MD5HASH}" != "${UBUNTU_ISO_CHKSUM}" ]; then
+        echo "ERROR: MD5 does not match. Got ${UBUNTU_ISO_CHKSUM} instead of ${UBUNTU_ISO_MD5HASH}. Aborting."
+        exit 1
+    fi
+elif [ "$OS_NAME" == "Darwin" ]; then
+    #statements
+    #put script for Mac OS X
+else
+    #statements
+    #put script for other os like Windows
 fi
 
 echo "[INFO]: Creating VM Box..."
