@@ -118,11 +118,13 @@ if [ ! -d ./boxes ] ; then
     mkdir boxes
 fi
 
-echo 'At the boot prompt, Select Lanuage | Hit <F6> | Press Esc | erase parts "file=/cdrom/preseed/ubuntu.seed vga=788...quite" | and then type:'
-echo " ks=http://${IP}:8081"
+echo 'At the boot prompt, Select Lanuage [or Press Esc] | Hit <F6> | Press Esc | Erase parts "file=/cdrom/preseed/ubuntu.seed vga=788...quite" | and then type:'
+echo "auto url=http://${IP}:8082 locale=en_US keyboard-configuration/layoutcode=us console-setup/ask_detect=false hostname=vagrant-ubuntu1204 domain=vagrant-ubuntu1204.com"
 echo "When done typing will look like:"
-echo ">Boot Options locale=en_US keyboard-configuration/layoutcode=us console-setup/ask_detect=false hostname=vagrant-ubuntu domain=vagrant-ubuntu initrd=/install/initrd.gz ks=http://${IP}:8081 --"
-sh ./httpd-kickstart-server.sh | nc -l 8081 >/dev/null
-#sh ./httpd-preseed-server.sh | nc -l 8082 >/dev/null
+echo ">Boot Options auto url=http://${IP}:8082  locale=en_US keyboard-configuration/layoutcode=us console-setup/ask_detect=false hostname=vagrant-ubuntu1204 domain=vagrant-ubuntu1204.com initrd=/install/initrd.gz"
+#sh ./httpd-kickstart-server.sh | nc -l 8081 >/dev/null &
+sh ./httpd-preseed-server.sh | nc -l 8082 >/dev/null &
+sh ./httpd-late-command-server.sh | nc -l 8083 >/dev/null &
+
 echo When finished:
 echo "./cleanup && vagrant package --base ${NAME} --output boxes/${NAME}-`date +%Y%m%d`.box"

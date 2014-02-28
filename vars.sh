@@ -32,4 +32,5 @@ fi
 
 NATNET=10.0.2.0/24
 
+#### ubuntu download url
 UBUNTU_12_04_ALTERNATE_URL=http://releases.ubuntu.com/precise/ubuntu-12.04.4-alternate-amd64.iso
