@@ -126,6 +126,18 @@ if [ ! -d ./boxes ] ; then
     mkdir boxes
 fi
 
+#### Function to dynamically update IP of late command server inside preseed.cfg
+updateLateCommandURLInPreseedFile(){
+    echo "[INFO]:: Updating late command url in pressed.cfg file**************"
+    echo ""
+    cat preseed.cfg | sed  's_${IPADDR}_'"$IP"'_g' > temp.cfg
+    cat temp.cfg > preseed.cfg
+    rm temp.cfg
+    echo "[INFO]:: Successfully substituted IP address of late command server****************"
+}
+#### Calling function.
+updateLateCommandURLInPreseedFile
+
 echo 'At the boot prompt, Select Lanuage [or Press Esc] | Hit <F6> | Press Esc | Erase parts "file=/cdrom/preseed/ubuntu.seed vga=788...quite" | and then type:'
 echo "auto url=http://${IP}:8082 locale=en_US keyboard-configuration/layoutcode=us console-setup/ask_detect=false hostname=vagrant-ubuntu1204 domain=vagrant-ubuntu1204.com"
 echo "When done typing will look like:"
