@@ -50,7 +50,13 @@ python get-pip.py
 rm -f get-pip.py
 
 # Third Install Ansible
-pip install ansible
+sudo apt-get install -y python-dev
+sudo pip install paramiko PyYAML jinja2 httplib2    
+sudo pip install ansible
+
+#### install tools
+# build-essential nfs-common dkms curl wget openssh-server openssh-client man are already installed
+sudo apt-get install bzr mercurial
 
 #### VirtualBox Guest Additions
 mount /dev/cdrom /mnt
