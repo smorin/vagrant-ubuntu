@@ -92,15 +92,9 @@ VBoxManage storagectl ${NAME} --name SATA --hostiocache on
 #    --storagectl SATA --port 3 --medium additions
 VBoxManage startvm ${NAME} --type gui
 
-# This only really caters for the common case. If you have problems, please
-# discover your host's IP address and adjust accordingly.
-#IP=`echo ${NATNET} | sed -nE 's/^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}).*/\1/p'`
-#IP=${IP}".3"
-
 # Tring to ping the IP if not reachable set error
 PING_RESPONSE=0
 ping -q -c 1 -W 2 ${IP} || PING_RESPONSE=1
-
 
 # If response is 0 the IP is reachable so might be the right one
 if [ ! $PING_RESPONSE -eq 0 ] ; then
@@ -128,7 +122,7 @@ fi
 
 #### Function to dynamically update IP of late command server inside preseed.cfg
 updateLateCommandURLInPreseedFile(){
-    echo "[INFO]:: Updating late command url in pressed.cfg file**************"
+    echo "[INFO]:: Updating late command url in preseed.cfg file**************"
     echo ""
     cat preseed.cfg | sed  's_${IPADDR}_'"$IP"'_g' > temp.cfg
     cat temp.cfg > preseed.cfg
@@ -142,7 +136,9 @@ echo 'At the boot prompt, Select Lanuage [or Press Esc] | Hit <F6> | Press Esc |
 echo "auto url=http://${IP}:8082 locale=en_US keyboard-configuration/layoutcode=us console-setup/ask_detect=false hostname=vagrant-ubuntu1204 domain=vagrant-ubuntu1204.com"
 echo "When done typing will look like:"
 echo ">Boot Options auto url=http://${IP}:8082  locale=en_US keyboard-configuration/layoutcode=us console-setup/ask_detect=false hostname=vagrant-ubuntu1204 domain=vagrant-ubuntu1204.com initrd=/install/initrd.gz"
-#sh ./httpd-kickstart-server.sh | nc -l 8081 >/dev/null &
+
+#### make preseed.cfg and late_command.sh files available via netcat server
+# for more information got to https://help.ubuntu.com/10.04/installation-guide/i386/preseed-using.html
 sh ./httpd-preseed-server.sh | nc -l 8082 >/dev/null &
 sh ./httpd-late-command-server.sh | nc -l 8083 >/dev/null &
 
