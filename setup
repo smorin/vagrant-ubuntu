@@ -32,9 +32,11 @@ if [ "$OS_NAME" == "Linux" ]; then
         exit 1
     fi
 elif [ "$OS_NAME" == "Darwin" ]; then
+    echo "[Warning]:: No script to check MD5 Hash for $OS_NAME Put script here for $OS_NAME"
     #statements
     #put script for Mac OS X
 else
+    echo "[Warning]:: No script to check MD5 Hash for $OS_NAME Put script here for $OS_NAME"
     #statements
     #put script for other os like Windows
 fi
