@@ -4,18 +4,27 @@ vagrant-centos
 Scripts to create a lean Ubuntu Vagrant box.
 
 http://www.ubuntu.com/download/desktop/install-desktop-long-term-support
+
 Install Ubuntu 12.04.4 LTS
+
 Use "Alternate install CD"
+
 http://releases.ubuntu.com/precise/
 
+
 Use "Automated Install using Kickstart"
+
 https://help.ubuntu.com/12.04/installation-guide/i386/automatic-install.html
 
+
 Other Vagrant Box Setup Examples:
+
 https://github.com/puppetlabs/puppet-vagrant-boxes
+
 https://github.com/phusion/open-vagrant-boxes
 
 Run:
+
     cd PATH_TO/vagrant-ubuntu
     ./setup
 
@@ -28,6 +37,7 @@ form `./cleanup && ...`). Congratulations! You have just created a
 Vagrant box.
 
 Your Vagrant box will be saved in a file like:
+
     PATH_TO/vagrant-centos/boxes/centos65-x86_64-20140125.box
 
 Specification
@@ -89,4 +99,5 @@ and adjust accordingly.
 Contributors
 ----------------
 Christopher Rawnsley
+
 Steve Morin
