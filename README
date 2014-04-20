@@ -1,4 +1,4 @@
-vagrant-centos
+vagrant-ubuntu
 ==============
 
 Scripts to create a lean Ubuntu Vagrant box.
@@ -10,17 +10,15 @@ http://releases.ubuntu.com/precise/
 
 Use "Automated Install using Kickstart"
 https://help.ubuntu.com/12.04/installation-guide/i386/automatic-install.html
-
-Other Vagrant Box Setup Examples:
-https://github.com/puppetlabs/puppet-vagrant-boxes
-https://github.com/phusion/open-vagrant-boxes
+Use "Automated Install using Preseed"
+https://help.ubuntu.com/10.04/installation-guide/i386/preseed-using.html
 
 Run:
     cd PATH_TO/vagrant-ubuntu
     ./setup
 
-and at the boot prompt press tab to gain access to the boot options.
-Add the `ks=.*` string you get from the command prompt. The rest of
+and at the boot prompt press <F6> to gain access to the boot options.
+Add the `url=.*` [or `ks=.*`] string you get from the command prompt. The rest of
 the installation is automated.
 
 Finally, run the last command that `setup` spits out (it's of the
@@ -28,7 +26,7 @@ form `./cleanup && ...`). Congratulations! You have just created a
 Vagrant box.
 
 Your Vagrant box will be saved in a file like:
-    PATH_TO/vagrant-centos/boxes/centos65-x86_64-20140125.box
+    PATH_TO/vagrant-ubuntu/boxes/ubuntu1204-x86_64-20140125.box
 
 Specification
 -------------
@@ -45,7 +43,7 @@ for your needs using options like:
 in your `Vagrantfile`.
 
 This box has a heavy bias towards US English locales. If this
-affects you, please adjust the `ks.cfg` file accordingly. This was
+affects you, please adjust the preseed.cfg [or `ks.cfg` ] file accordingly. This was
 mainly done as a space saving measure.
 
 
@@ -54,7 +52,7 @@ Additional Notes
 
 There is a hacky 'web server' to get the kickstart script into the
 installer which requires `netcat`. Alternatively, you could host the
-`ks.cfg` file on your own HTTP server.
+preseed.cfg and late_command.sh [or `ks.cfg` ] file on your own HTTP server.
 
 Please be aware that these scripts will *not* install any special
 provisioners beyond the shell. Patches will be considered if you
@@ -71,7 +69,7 @@ configuration to best suit your needs. In particular, take note
 of the location of the ISOs (which aren't include in the git
 repository):
 
-    INSTALLER="./isos/CentOS-6.5-x86_64-minimal.iso"
+    INSTALLER="./isos/ubuntu-12.04.4-alternate-amd64.iso"
     GUESTADDITIONS="./isos/VBoxGuestAdditions-4.3.6.iso"
 
 Assumptions have been made about the location of the hard drive as
