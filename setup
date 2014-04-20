@@ -104,7 +104,10 @@ if [ ! $PING_RESPONSE -eq 0 ] ; then
     echo "IP from NATNET variable not pingable"
     if [ `uname` == "Darwin" ] ; then
         echo "On a mac autoassigning"
-        IP=`ipconfig getifaddr en1`
+        IP=`ipconfig getifaddr en0`
+        if [ -z $IP ]; then
+          IP=`ipconfig getifaddr en1`
+        fi 
     fi
 fi
 

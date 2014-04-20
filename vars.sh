@@ -11,7 +11,7 @@ UBUNTU_ISO_MD5HASH="46e0fac240154bf59a11426a47a61363"
 if [ $OS_NAME == "Linux" ]; then
     # Default Linux Location of Guest Additions
 	GUESTADDITIONS_PATH=/usr/share/virtualbox/VBoxGuestAdditions.iso
-elif [ $OS_NAME == "Darwin"]; then
+elif [ $OS_NAME == "Darwin" ]; then
 	# Default MAC Location of Guest Additions
 	GUESTADDITIONS_PATH=/Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso
 else
