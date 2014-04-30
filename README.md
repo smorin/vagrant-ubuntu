@@ -1,4 +1,4 @@
-vagrant-centos
+vagrant-ubuntu
 ==============
 
 Scripts to create a lean Ubuntu Vagrant box.
