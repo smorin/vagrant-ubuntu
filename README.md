@@ -3,25 +3,25 @@ vagrant-centos
 
 Scripts to create a lean Ubuntu Vagrant box.
 
-http://www.ubuntu.com/download/desktop/install-desktop-long-term-support
+- http://www.ubuntu.com/download/desktop/install-desktop-long-term-support
 
 Install Ubuntu 12.04.4 LTS
 
 Use "Alternate install CD"
 
-http://releases.ubuntu.com/precise/
+- http://releases.ubuntu.com/precise/
 
 
 Use "Automated Install using Kickstart"
 
-https://help.ubuntu.com/12.04/installation-guide/i386/automatic-install.html
+- https://help.ubuntu.com/12.04/installation-guide/i386/automatic-install.html
 
 
 Other Vagrant Box Setup Examples:
 
-https://github.com/puppetlabs/puppet-vagrant-boxes
+- https://github.com/puppetlabs/puppet-vagrant-boxes
 
-https://github.com/phusion/open-vagrant-boxes
+- https://github.com/phusion/open-vagrant-boxes
 
 Run:
 
