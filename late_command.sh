@@ -1,6 +1,7 @@
 #!/bin/bash
 
-#### passwordless sudo
+##### passwordless sudo
+touch /home/vagrant/from_late_command
 echo "%sudo   ALL=NOPASSWD: ALL" >> /etc/sudoers
 
 sed -i '/.*requiretty/d' /etc/sudoers
@@ -23,51 +24,55 @@ P3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcW\
 yLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
 EOM
 
-#### setup correct permissions
+##### setup correct permissions
 chmod 755 /home/vagrant/.ssh
 chmod 644 /home/vagrant/.ssh/authorized_keys
 chown -R vagrant:vagrant /home/vagrant/.ssh
 
-#### Setup network devices.
+##### Setup network devices.
 rm /etc/udev/rules.d/70-persistent-net.rules
 echo '#' >/etc/udev/rules.d/75-persistent-net-generator.rules
 
-#### setup DNS records
+##### setup DNS records
 cat <<EOM >>/etc/hosts
 127.0.0.1   vagrant-ubuntu1204.com vagrant-ubuntu1204
 ::1         vagrant-ubuntu1204.com vagrant-ubuntu1204
 EOM
 
-#### Install Ansible and dependencies
-# First Install Distribute
-curl -O http://python-distribute.org/distribute_setup.py 
-python distribute_setup.py
-rm -f distribute_setup.py
+##### Install Ansible and dependencies
+## First Install Distribute
+#curl -O http://python-distribute.org/distribute_setup.py
+#python distribute_setup.py
+#rm -f distribute_setup.py
 
-# Second Install Pip
-curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py -O
-python get-pip.py
-rm -f get-pip.py
+### Second Install Pip
+#curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py -O
+#python get-pip.py
+#rm -f get-pip.py
 
-# Third Install Ansible
-sudo apt-get install -y python-dev
-sudo pip install paramiko PyYAML jinja2 httplib2    
-sudo pip install ansible
+### Third Install Ansible
+##sudo apt-get install -y python-dev # hangs preseed
+##sudo pip install paramiko PyYAML jinja2 httplib2
+##pip install ansible
 
-#### install tools
-# build-essential nfs-common dkms curl wget openssh-server openssh-client man are already installed
-sudo apt-get install bzr mercurial
+###### install tools
+### build-essential nfs-common dkms curl wget openssh-server openssh-client man are already installed
+##sudo apt-get install bzr mercurial
+/usr/bin/apt-get --yes --force-yes install linux-headers-generic build-essential dkms
 
-#### VirtualBox Guest Additions
-mount /dev/cdrom /mnt
-/mnt/VBoxLinuxAdditions.run
-chkconfig vboxadd-x11 off
-umount /mnt/
+###### VirtualBox Guest Additions
+mount -o ro `find /dev/disk/by-label | grep VBOXADDITIONS` /media/cdrom/
+sh /media/cdrom/VBoxLinuxAdditions.run
+update-rc.d -f vboxadd-x11 remove
+umount /media/cdrom
 
-#### display login promt after boot
-sed "s/quiet splash//" /etc/default/grub > /tmp/grub
-mv /tmp/grub /etc/default/grub
-update-grub
+# symlink VBoxGuestAdditions. Otherwise, vagrant will complain that vboxfs is not available.
+ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAdditions
 
-#### clean up
-apt-get clean
+###### display login promt after boot
+##sed "s/quiet splash//" /etc/default/grub > /tmp/grub
+##mv /tmp/grub /etc/default/grub
+##update-grub
+
+###### clean up
+##apt-get clean

@@ -20,7 +20,6 @@ if [ ! -f "${GUESTADDITIONS}" ] ; then
         echo "ERROR: Can't find GuestAdditions ISO, find manually and update vars.sh with the right path. Aborting..."
         exit 1
     fi
-
 fi
 
 # make sure download is right
