@@ -7,23 +7,42 @@ if [ ! -f "${INSTALLER_PATH}${INSTALLER_ISO}" ] ; then
     if [ ! -d "${INSTALLER_PATH}" ] ; then
         mkdir -p ${INSTALLER_PATH}
     fi
-    curl -Lk ${CENTOS_6_5_MINIMAL_URL} -o "${INSTALLER_PATH}${INSTALLER_ISO}"
+    curl -Lk ${UBUNTU_12_04_ALTERNATE_URL} -o "${INSTALLER_PATH}${INSTALLER_ISO}"
 fi
 
 # Check if the VirtualBox Additions ISO is found
 
 if [ ! -f "${GUESTADDITIONS}" ] ; then
-    if [ -f "${GUESTADDITIONS_MAC}" ] ; then
-        GUESTADDITIONS=${GUESTADDITIONS_MAC}
-        echo "GUESTADDITIONS=${GUESTADDITIONS_MAC}"
+    if [ -f "${GUESTADDITIONS_PATH}" ] ; then
+        GUESTADDITIONS=${GUESTADDITIONS_PATH}
+        echo "GUESTADDITIONS=${GUESTADDITIONS_PATH}"
     else
-        echo "Can't find GuestAdditions ISO, find manually and update vars.sh with the right path"
+        echo "ERROR: Can't find GuestAdditions ISO, find manually and update vars.sh with the right path. Aborting..."
+        exit 1
     fi
-
 fi
 
+# make sure download is right
+if [ "$OS_NAME" == "Linux" ]; then
+    UBUNTU_ISO_CHKSUM=`md5sum "${INSTALLER_PATH}${INSTALLER_ISO}" | cut -d" " -f 1`
+    echo $UBUNTU_ISO_CHKSUM
+    if [ "${UBUNTU_ISO_MD5HASH}" != "${UBUNTU_ISO_CHKSUM}" ]; then
+        echo "ERROR: MD5 does not match. Got ${UBUNTU_ISO_CHKSUM} instead of ${UBUNTU_ISO_MD5HASH}. Aborting."
+        exit 1
+    fi
+elif [ "$OS_NAME" == "Darwin" ]; then
+    echo "[Warning]:: No script to check MD5 Hash for $OS_NAME Put script here for $OS_NAME"
+    #statements
+    #put script for Mac OS X
+else
+    echo "[Warning]:: No script to check MD5 Hash for $OS_NAME Put script here for $OS_NAME"
+    #statements
+    #put script for other os like Windows
+fi
 
+echo "[INFO]: Creating VM Box..."
 
+# Create new vm named "$NAME"
 VBoxManage createvm --name ${NAME} --ostype ${TYPE} --register
 
 VBoxManage modifyvm ${NAME} \
@@ -46,22 +65,26 @@ VBoxManage modifyvm ${NAME} \
     --bioslogodisplaytime 0 \
     --biosbootmenu disabled
 
+# Create a new file to serve a virtual 8GB disk
 VBoxManage createhd --filename "${HDD}" --size 8192
 # Swap is recommended to be double the size of RAM.
 VBoxManage createhd --filename "${HDD_SWAP}" --size 1226
-
+# Create a new SATA controller
 VBoxManage storagectl ${NAME} \
     --name SATA --add sata --portcount 2 --bootable on
-
+# Attach the previous file to the SATA controller we created previously
 VBoxManage storageattach ${NAME} \
     --storagectl SATA --port 0 --type hdd --medium "${HDD}"
 VBoxManage storageattach ${NAME} \
     --storagectl SATA --port 1 --type hdd --medium "${HDD_SWAP}"
+# Also attach an ISO as a DVD drive, so we can install $NAME 
 VBoxManage storageattach ${NAME} \
     --storagectl SATA --port 2 --type dvddrive --medium "${INSTALLER_PATH}${INSTALLER_ISO}"
 # Specifies Guest Additions Manually
 VBoxManage storageattach ${NAME} \
     --storagectl SATA --port 3 --type dvddrive --medium "${GUESTADDITIONS}"
+# Enabling host I/O caching
+VBoxManage storagectl ${NAME} --name SATA --hostiocache on
 # Specifies Guest Additions Automatically
 # Supposed to work but doesn't
 # See: http://www.virtualbox.org/manual/ch08.html#vboxmanage-storageattach
@@ -70,16 +93,9 @@ VBoxManage storageattach ${NAME} \
 #    --storagectl SATA --port 3 --medium additions
 VBoxManage startvm ${NAME} --type gui
 
-# This only really caters for the common case. If you have problems, please
-# discover your host's IP address and adjust accordingly.
-IP=`echo ${NATNET} | sed -nE 's/^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}).*/\1/p'`
-IP=${IP}".3"
-
-
 # Tring to ping the IP if not reachable set error
 PING_RESPONSE=0
 ping -q -c 1 -W 2 ${IP} || PING_RESPONSE=1
-
 
 # If response is 0 the IP is reachable so might be the right one
 if [ ! $PING_RESPONSE -eq 0 ] ; then
@@ -87,7 +103,10 @@ if [ ! $PING_RESPONSE -eq 0 ] ; then
     echo "IP from NATNET variable not pingable"
     if [ `uname` == "Darwin" ] ; then
         echo "On a mac autoassigning"
-        IP=`ipconfig getifaddr en1`
+        IP=`ipconfig getifaddr en0`
+        if [ -z $IP ]; then
+          IP=`ipconfig getifaddr en1`
+        fi 
     fi
 fi
 
@@ -105,11 +124,27 @@ if [ ! -d ./boxes ] ; then
     mkdir boxes
 fi
 
-echo 'At the boot prompt, hit <TAB> and then type:'
-echo " ks=http://${IP}:8081"
+#### Function to dynamically update IP of late command server inside preseed.cfg
+updateLateCommandURLInPreseedFile(){
+    echo "[INFO]:: Updating late command url in preseed.cfg file**************"
+    echo ""
+    cat preseed.cfg | sed  's_${IPADDR}_'"$IP"'_g' > temp.cfg
+    cat temp.cfg > preseed.cfg
+    rm temp.cfg
+    echo "[INFO]:: Successfully substituted IP address of late command server****************"
+}
+#### Calling function.
+updateLateCommandURLInPreseedFile
+
+echo 'At the boot prompt, Select Lanuage [or Press Esc] | Hit <F6> | Press Esc | Erase parts "file=/cdrom/preseed/ubuntu.seed vga=788...quite" | and then type:'
+echo "auto url=http://${IP}:8082 locale=en_US keyboard-configuration/layoutcode=us console-setup/ask_detect=false hostname=vagrant-ubuntu1204 domain=vagrant-ubuntu1204.com"
 echo "When done typing will look like:"
-echo "> vmlinuz initrd=initrd.img ks=http://${IP}:8081"
-sh ./httpd.sh | nc -l 8081 >/dev/null
+echo ">Boot Options auto url=http://${IP}:8082  locale=en_US keyboard-configuration/layoutcode=us console-setup/ask_detect=false hostname=vagrant-ubuntu1204 domain=vagrant-ubuntu1204.com initrd=/install/initrd.gz"
+
+#### make preseed.cfg and late_command.sh files available via netcat server
+# for more information got to https://help.ubuntu.com/10.04/installation-guide/i386/preseed-using.html
+sh ./httpd-preseed-server.sh | nc -l 8082 >/dev/null &
+sh ./httpd-late-command-server.sh | nc -l 8083 >/dev/null &
 
 echo When finished:
 echo "./cleanup && vagrant package --base ${NAME} --output boxes/${NAME}-`date +%Y%m%d`.box"
