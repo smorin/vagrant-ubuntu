@@ -39,25 +39,10 @@ cat <<EOM >>/etc/hosts
 ::1         vagrant-ubuntu1204.com vagrant-ubuntu1204
 EOM
 
-##### Install Ansible and dependencies
-## First Install Distribute
-#curl -O http://python-distribute.org/distribute_setup.py
-#python distribute_setup.py
-#rm -f distribute_setup.py
-
-### Second Install Pip
-#curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py -O
-#python get-pip.py
-#rm -f get-pip.py
-
-### Third Install Ansible
-##sudo apt-get install -y python-dev # hangs preseed
-##sudo pip install paramiko PyYAML jinja2 httplib2
-##pip install ansible
+##### Install pip
+/usr/bin/apt-get --yes --force-yes install python-pip
 
 ###### install tools
-### build-essential nfs-common dkms curl wget openssh-server openssh-client man are already installed
-##sudo apt-get install bzr mercurial
 /usr/bin/apt-get --yes --force-yes install linux-headers-generic build-essential dkms
 
 ###### VirtualBox Guest Additions
@@ -74,5 +59,3 @@ ln -s /opt/VBoxGuestAdditions-4.3.10/lib/VBoxGuestAdditions /usr/lib/VBoxGuestAd
 ##mv /tmp/grub /etc/default/grub
 ##update-grub
 
-###### clean up
-##apt-get clean
