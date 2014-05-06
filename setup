@@ -31,9 +31,16 @@ if [ "$OS_NAME" == "Linux" ]; then
         exit 1
     fi
 elif [ "$OS_NAME" == "Darwin" ]; then
-    echo "[Warning]:: No script to check MD5 Hash for $OS_NAME Put script here for $OS_NAME"
     #statements
     #put script for Mac OS X
+    UBUNTU_ISO_CHKSUM=`md5 -q "${INSTALLER_PATH}${INSTALLER_ISO}"`
+    echo $UBUNTU_ISO_CHKSUM
+    if [ "${UBUNTU_ISO_MD5HASH}" != "${UBUNTU_ISO_CHKSUM}" ]; then
+        echo "ERROR: MD5 does not match. Got ${UBUNTU_ISO_CHKSUM} instead of ${UBUNTU_ISO_MD5HASH}. Aborting."
+        exit 1
+    else
+        echo "MD5 check verified"
+    fi
 else
     echo "[Warning]:: No script to check MD5 Hash for $OS_NAME Put script here for $OS_NAME"
     #statements
@@ -103,12 +110,17 @@ if [ ! $PING_RESPONSE -eq 0 ] ; then
     echo "IP from NATNET variable not pingable"
     if [ `uname` == "Darwin" ] ; then
         echo "On a mac autoassigning"
-        IP=`ipconfig getifaddr en0`
-        if [ -z $IP ]; then
+        IP=`ipconfig getifaddr en0 || echo "none"`
+        # if [ -z $IP ]; then
+        #   IP=`ipconfig getifaddr en1`
+        # fi 
+        if [ $IP == "none" ]; then
           IP=`ipconfig getifaddr en1`
         fi 
     fi
 fi
+
+echo "Testing: ${IP}"
 
 # Retesting might have auto assigned
 PING_RESPONSE=0
@@ -117,6 +129,8 @@ ping -q -c 1 -W 2 ${IP} || PING_RESPONSE=1
 # If response is 0 the IP is reachable so might be the right one
 if [ ! $PING_RESPONSE -eq 0 ] ; then
     echo "Couldn't ping the IP so you should look it up manually"
+    IP="10.0.2.2"
+    echo "As last resort setting it to: ${IP}"
 fi 
 
 # If this directory doesn't exist the box won't be created
